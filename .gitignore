@@ -1,4 +1,12 @@
-*.o
+*.elf
 *.d
 *.hex
-*.elf
+*.o
+nbproject
+*~
+*.bak
+*.BAK
+*.orig
+*.tmp
+*.TMP
+/build

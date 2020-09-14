@@ -7,6 +7,9 @@ Purpose
 An easy starting point for a Teensy 3.X project which might not fit inside the
 arduino build environment.
 
+Modified to be used under [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10) and [VSCode](https://code.visualstudio.com/)
+
+Note that this will not work under [VSCodium](https://vscodium.com/) as Microsoft wont let us :/
 
 Reasons to Use
 --------------
@@ -16,7 +19,6 @@ Reasons to Use
 - You love Make
 - Because
 
-
 Setup
 -----
 
@@ -24,6 +26,13 @@ Install the Teensy udev rule: `sudo cp tools/49-teensy.rules /etc/udev/rules.d/`
 
 Then unplug your Teensy and plug it back in.
 
+### VSCode Specific
+
+When using with WSL and VSCode cd into the folder and then run `code .`
+
+Also run `sudo chmod 777 -R folder-name` where `folder-name` is the name of the entire folder, I was running into a lot permission issues with WSL
+
+This template *should* still work on pure linux, however, the current CLI tools will not
 
 Using
 -----
@@ -34,26 +43,24 @@ Using
 4. Build your code ```make```
 5. Upload your code ```make upload```
 
-
 Make Targets
 ------------
 
 - `make` alias for `make hex`
 - `make build` compiles everything and produces a .elf
-- `make hex` converts the elf to an intel hex file
-- `make post_compile` opens the launcher with the correct file
 - `make upload` uploads the hex file to a teensy board
-- `make reboot` reboots the teensy
-
+- `make clean` clean up build files
 
 Where everything came from
 --------------------------
 
-- The `teensy3` sub-folder is taken from [The Teensy 3 Cores](https://github.com/PaulStoffregen/cores/tree/master/teensy3)
-- The `tools` sub-folder is taken from [Teensyduino](http://www.pjrc.com/teensy/td_download.html)
-- The `src/main.cpp` file is moved, unmodified from `teensy3/main.cpp`
-- The `Makefile` file is moved, modified from `teensy3/Makefile`
+- The `teensy` sub-folder is taken from a [Teensyduino](http://www.pjrc.com/teensy/td_download.html) installation from the arduino install directory `hardware/teensy`
+- The `tools` sub-folder is also taken from the same [Teensyduino](http://www.pjrc.com/teensy/td_download.html) directory
+- The `src/main.cpp` file is moved, modified from `teensy/avr/cores/teensy3/main.cpp`
+- The `Makefile` file is moved, modified from `teensy/avr/cores/teensy3/Makefile`
 - The `49-teensy.rules` file is taken from [PJRC's udev rules](http://www.pjrc.com/teensy/49-teensy.rules)
+- The `ComMonitor.exe` file is from [ComMonitor-CLI](https://github.com/LeHuman/ComMonitor-CLI)
+- The `teensy_loader_cli.exe` file is the [Teensy Loader Command Line](https://www.pjrc.com/teensy/loader_cli.html) compiled for windows
 
 Modifications to `Makefile` include
 - Add support for arduino libraries
@@ -61,3 +68,5 @@ Modifications to `Makefile` include
 - Calculate target name from current directory
 - Prettify rule output
 - Do not upload by default, only build
+- Other modifications which might have broken that arduino part
+- Usage of the teensy cli loader

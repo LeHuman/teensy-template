@@ -1,28 +1,31 @@
 #include "WProgram.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-extern "C" int main(void)
-{
-#ifdef USING_MAKEFILE
+#define TESTDELAY 50
 
-	// To use Teensy 3.0 without Arduino, simply put your code here.
-	// For example:
-
-	pinMode(13, OUTPUT);
-	while (1) {
-		digitalWriteFast(13, HIGH);
-		delay(500);
-		digitalWriteFast(13, LOW);
-		delay(500);
-	}
-
-
-#else
-	// Arduino's main() function just calls setup() and loop()....
-	setup();
-	while (1) {
-		loop();
-		yield();
-	}
-#endif
+int main(void) {
+    Serial.begin(115200);
+    delay(1000);
+    pinMode(13, OUTPUT);
+    while (1) {
+        digitalWriteFast(13, HIGH);
+        Serial.println("[Error] On");
+        delay(TESTDELAY);
+        digitalWriteFast(13, LOW);
+        Serial.println("[Info] Off");
+        delay(TESTDELAY);
+        digitalWriteFast(13, HIGH);
+        Serial.println("[Warn] On");
+        delay(TESTDELAY);
+        digitalWriteFast(13, LOW);
+        Serial.println("[Debug] Off");
+        delay(TESTDELAY);
+        digitalWriteFast(13, HIGH);
+        Serial.println("On");
+        delay(TESTDELAY);
+        digitalWriteFast(13, LOW);
+        Serial.println("[INFO] Off");
+        delay(TESTDELAY);
+    }
 }
-

@@ -1,8 +1,19 @@
 # The name of your project (used to name the compiled .hex file)
-TARGET = $(notdir $(CURDIR))
+# TARGET = $(notdir $(CURDIR))
+TARGET = Teensy36
 
 # The teensy version to use, 30, 31, 35, 36, or LC
-TEENSY = 30
+TEENSY = 36
+
+# CLI Monitor settings NOTE:Not working, use VSCode tasks instead
+#USBLOCATION = COM6
+#BAUD = 192000
+
+#************************************************************************
+# If building under WSL and usb fowarding is still not supported
+# Uncomment to instead use the windows teensy loader
+#************************************************************************
+# WSLMODE = 1
 
 # Set to 24000000, 48000000, or 96000000 to set CPU core speed
 TEENSY_CORE_SPEED = 48000000
@@ -23,11 +34,10 @@ BUILDDIR = $(abspath $(CURDIR)/build)
 # locations and edit the pathnames.  The rest of Arduino is not needed.
 #************************************************************************
 
-# path location for Teensy Loader, teensy_post_compile and teensy_reboot
+# path location for Teensy Loader, teensy_post_compile, teensy_loader_cli and teensy_reboot
 TOOLSPATH = $(CURDIR)/tools
-
 ifeq ($(OS),Windows_NT)
-    $(error What is Win Dose?)
+    $(error Use WSL if on Windows!)
 else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Darwin)
@@ -36,7 +46,8 @@ else
 endif
 
 # path location for Teensy 3 core
-COREPATH = teensy3
+# COREPATH = teensy3
+COREPATH = teensy/avr/cores/teensy3
 
 # path location for Arduino libraries
 LIBRARYPATH = libraries
@@ -49,16 +60,16 @@ COMPILERPATH = $(TOOLSPATH)/arm/bin
 #************************************************************************
 
 # CPPFLAGS = compiler options for C and C++
-CPPFLAGS = -Wall -g -Os -mthumb -ffunction-sections -fdata-sections -nostdlib -MMD $(OPTIONS) -DTEENSYDUINO=124 -DF_CPU=$(TEENSY_CORE_SPEED) -Isrc -I$(COREPATH)
+CPPFLAGS = -Wall -g -O3 -mthumb -ffunction-sections -fomit-frame-pointer -fdata-sections -nostdlib -MMD $(OPTIONS) -DTEENSYDUINO=144 -DF_CPU=$(TEENSY_CORE_SPEED) -Isrc -I$(COREPATH)
 
 # compiler options for C++ only
-CXXFLAGS = -std=gnu++0x -felide-constructors -fno-exceptions -fno-rtti
+CXXFLAGS = -std=gnu++14 -felide-constructors -fno-exceptions -fno-rtti -D_GNU_SOURCE
 
 # compiler options for C only
 CFLAGS =
 
 # linker options
-LDFLAGS = -Os -Wl,--gc-sections -mthumb
+LDFLAGS = -O3 -Wl,--gc-sections -mthumb
 
 # additional libraries to link
 LIBS = -lm
@@ -68,27 +79,44 @@ ifeq ($(TEENSY), 30)
     CPPFLAGS += -D__MK20DX128__ -mcpu=cortex-m4
     LDSCRIPT = $(COREPATH)/mk20dx128.ld
     LDFLAGS += -mcpu=cortex-m4 -T$(LDSCRIPT)
+MCU = mk20dx128
 else ifeq ($(TEENSY), 31)
     CPPFLAGS += -D__MK20DX256__ -mcpu=cortex-m4
     LDSCRIPT = $(COREPATH)/mk20dx256.ld
     LDFLAGS += -mcpu=cortex-m4 -T$(LDSCRIPT)
+MCU = mk20dx256
 else ifeq ($(TEENSY), LC)
     CPPFLAGS += -D__MKL26Z64__ -mcpu=cortex-m0plus
     LDSCRIPT = $(COREPATH)/mkl26z64.ld
     LDFLAGS += -mcpu=cortex-m0plus -T$(LDSCRIPT)
     LIBS += -larm_cortexM0l_math
+MCU = mkl26z64
 else ifeq ($(TEENSY), 35)
     CPPFLAGS += -D__MK64FX512__ -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
     LDSCRIPT = $(COREPATH)/mk64fx512.ld
     LDFLAGS += -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -T$(LDSCRIPT)
     LIBS += -larm_cortexM4lf_math
+MCU = mk64fx512
 else ifeq ($(TEENSY), 36)
     CPPFLAGS += -D__MK66FX1M0__ -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
     LDSCRIPT = $(COREPATH)/mk66fx1m0.ld
     LDFLAGS += -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -T$(LDSCRIPT)
-    LIBS += -larm_cortexM4lf_math
+	LIBS += -larm_cortexM4lf_math
+MCU = mk66fx1m0
 else
     $(error Invalid setting for TEENSY)
+endif
+
+# change loader and moniter if on WSL
+ifdef WSLMODE
+BEEP= rundll32.exe cmdext.dll,MessageBeepStub
+T_CLI_LOADER = teensy_loader_cli.exe
+#FIXME: Issues with running moniter through makefile, I wonder why
+#T_CLI_MON = ComMoniter.exe $(USBLOCATION) $(BAUD)
+else
+T_CLI_LOADER = teensy_loader_cli
+#TODO: find linux serial moniter
+#T_CLI_MON = None
 endif
 
 # set arduino define if given
@@ -125,13 +153,15 @@ build: $(TARGET).elf
 
 hex: $(TARGET).hex
 
-post_compile: $(TARGET).hex
-	@$(abspath $(TOOLSPATH))/teensy_post_compile -file="$(basename $<)" -path=$(CURDIR) -tools="$(abspath $(TOOLSPATH))"
+cli_load: $(TARGET).hex
+	@$(abspath $(TOOLSPATH))/$(T_CLI_LOADER) -mmcu=$(MCU) -w $(basename $<).hex -v -s
 
-reboot:
-	@-$(abspath $(TOOLSPATH))/teensy_reboot
+upload:
+	@ ( $(MAKE) cli_load && [ $$? -eq 0 ] ) || ( echo "\nFailed to upload, retrying once\n" && sleep 1 && $(MAKE) cli_load )
+	@echo Good to go
 
-upload: post_compile reboot
+#moniter: 
+#@$(abspath $(TOOLSPATH))/$(T_CLI_MON)
 
 $(BUILDDIR)/%.o: %.c
 	@echo -e "[CC]\t$<"
