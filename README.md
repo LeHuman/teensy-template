@@ -30,7 +30,9 @@ Then unplug your Teensy and plug it back in.
 
 When using with WSL and VSCode cd into the folder and then run `code .`
 
-Also run `sudo chmod 777 -R folder-name` where `folder-name` is the name of the entire folder, I was running into a lot permission issues with WSL
+Also run `sudo chmod 777 -R folder-name` where `folder-name` is the name of the entire folder, I was running into permission issues with WSL
+
+Set the baudrate and port that should be used to upload/monitor in `.vscode/settings.json`
 
 This template *should* still work on pure linux, however, the current CLI tools will not
 
@@ -42,6 +44,17 @@ Using
 3. Set the TEENSY variable in `Makefile` according to your teensy version
 4. Build your code ```make```
 5. Upload your code ```make upload```
+
+### VSCode Tasks
+
+* `Clean`: Run `make clean`
+* `Build`: Run `make build`
+* `Stop`: Monitor: Run a CMD command to stop the monitor ( I did not know how to make VS close it automatically )
+* `Reboot`: Connect to teensy at 134 Baud to reboot it
+* `Upload`: Run `make upload` with WSL Mode enabled
+* `Monitor`: Run monitor program to read serial data
+
+By default, `Ctrl + Shift + B` (Run Build Task) should run all of the above in order except for `Clean`
 
 Make Targets
 ------------
