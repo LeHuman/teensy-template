@@ -51,7 +51,7 @@ Using
 
 * `Clean`: Run `make clean`
 * `Build`: Run `make build`
-* `Stop`: Monitor: Run a CMD command to stop the monitor ( VS does not close it automatically )
+* `Stop Monitor`: Run a CMD command to stop the monitor ( VS does not close it automatically )
 * `Reboot`: Connect to teensy at 134 Baud to reboot it
 * `Upload`: Run `make upload` with WSL Mode enabled
 * `Monitor`: Run monitor program to read serial data
