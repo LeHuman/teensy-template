@@ -9,7 +9,7 @@ arduino build environment.
 
 Modified to be used under [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10) and [VSCode](https://code.visualstudio.com/)
 
-Note that this will not work under [VSCodium](https://vscodium.com/) as Microsoft wont let us :/
+Note that this will not work under [VSCodium](https://vscodium.com/) as Microsoft wont let us for [now](https://code.visualstudio.com/docs/remote/faq#_why-arent-the-remote-development-extensions-or-their-components-open-source) :/
 
 Reasons to Use
 --------------
@@ -27,6 +27,8 @@ Install the Teensy udev rule: `sudo cp tools/49-teensy.rules /etc/udev/rules.d/`
 Then unplug your Teensy and plug it back in.
 
 ### VSCode Specific
+
+Install and enable ( or enable per workspace ) the [Remote Extension Pack](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack)
 
 When using with WSL and VSCode cd into the folder and then run `code .`
 
